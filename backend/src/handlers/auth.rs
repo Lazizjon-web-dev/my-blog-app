@@ -1,7 +1,7 @@
-use actix_web::{web, HttpResponse};
-use serde::{Deserialize, Serialize};
 use crate::services::auth_service;
-
+use actix_web::{HttpResponse, web};
+use serde::{Deserialize, Serialize};
+use serde_json::json;
 #[derive(Serialize, Deserialize)]
 pub struct LoginRequest {
     pub email: String,

@@ -1,5 +1,5 @@
+use super::super::handlers::auth;
 use actix_web::web;
-use super::handlers::auth;
 
 pub fn config(cfg: &mut web::ServiceConfig) {
     cfg.service(
