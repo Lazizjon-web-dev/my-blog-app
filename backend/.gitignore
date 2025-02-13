@@ -1,0 +1,22 @@
+# Ignore Cargo build artifacts
+/target/
+
+# Ignore Cargo lock file (if you're building a library, you might want to commit this)
+Cargo.lock
+
+# Ignore environment-specific files
+.env
+.env.*
+
+# Ignore IDE-specific files
+.vscode/
+.idea/
+
+# Ignore macOS-specific files
+.DS_Store
+
+# Ignore Rust cache files
+*.rs.bk
+
+# Ignore any local development files
+/local/
