@@ -1,8 +1,11 @@
 use actix_cors::Cors;
-use actix_web::{get, App, HttpResponse, HttpServer, Responder};
+use actix_web::{App, HttpResponse, HttpServer, Responder, get, web};
 use dotenv::dotenv;
+use sqlx::PgPool;
+use std::env;
 
 mod handlers;
+mod models;
 mod routes;
 mod services;
 mod utils;
@@ -10,8 +13,14 @@ mod utils;
 #[get("/api/posts")]
 async fn get_posts() -> impl Responder {
     HttpResponse::Ok().json(vec![
-        Post { id: 1, title: "First Post".to_string() },
-        Post { id: 2, title: "Second Post".to_string() },
+        Post {
+            id: 1,
+            title: "First Post".to_string(),
+        },
+        Post {
+            id: 2,
+            title: "Second Post".to_string(),
+        },
     ])
 }
 
@@ -24,7 +33,9 @@ struct Post {
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
-    HttpServer::new(|| {
+    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    let pool = PgPool::connect(&database_url).await.unwrap();
+    HttpServer::new(move || {
         App::new()
             .wrap(
                 Cors::default()
@@ -33,9 +44,10 @@ async fn main() -> std::io::Result<()> {
                     .allowed_headers(vec!["Content-Type", "Authorization"])
                     .max_age(3600),
             )
-	    .configure(routes::auth::config)
-	    .configure(routes::posts::config)
- 	    .configure(routes::users::config)	
+            .app_data(web::Data::new(pool.clone()))
+            .configure(routes::auth::config)
+            .configure(routes::posts::config)
+            .configure(routes::users::config)
             .service(get_posts)
     })
     .bind("127.0.0.1:8000")?
