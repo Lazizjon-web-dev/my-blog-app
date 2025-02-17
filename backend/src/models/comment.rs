@@ -34,16 +34,16 @@ impl Comment {
         let comments = query_as!(
             Comment,
             r#"
-                SELECT id, user_id, post_id, content, created_at 
+                SELECT id, user_id, post_id, content, created_at
                 FROM comments
-                WHERE post_id = $1 
+                WHERE post_id = $1
                 ORDER BY created_at DESC
             "#,
             post_id
         )
         .fetch_all(pool)
         .await?;
-        
+
         Ok(comments)
     }
 
@@ -63,7 +63,7 @@ impl Comment {
 
         Ok(comments)
     }
-    
+
     pub async fn delete(&self, pool: &PgPool) -> Result<(), Error> {
         query!(
             r#"

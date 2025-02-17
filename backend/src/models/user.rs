@@ -38,7 +38,7 @@ impl User {
         let user = sqlx::query_as!(
             User,
             r#"
-                SELECT id, username, email, password_hash, created_at 
+                SELECT id, username, email, password_hash, created_at
                 FROM users
                 WHERE email = $1
             "#,
