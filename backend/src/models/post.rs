@@ -37,7 +37,7 @@ impl Post {
         let post = query_as!(
             Post,
             r#"
-                SELECT id, user_id, title, content, created_at, updated_at 
+                SELECT id, user_id, title, content, created_at, updated_at
                 FROM posts
                 WHERE id = $1
             "#,
@@ -48,8 +48,6 @@ impl Post {
     }
     pub async fn find_all(
         pool: &PgPool,
-        limit: i64,
-        offset: i64,
     ) -> Result<Vec<Self>, sqlx::Error> {
         let posts = sqlx::query_as!(
             Post,
@@ -57,27 +55,26 @@ impl Post {
             SELECT id, user_id, title, content, created_at, updated_at
             FROM posts
             ORDER BY created_at DESC
-            LIMIT $1 OFFSET $2
             "#,
-            limit,
-            offset
         )
         .fetch_all(pool)
         .await?;
-    
+
         Ok(posts)
     }
     pub async fn find_by_user_id(pool: &PgPool, user_id: i32) -> Result<Vec<Self>, Error> {
         let posts = query_as!(
             Post,
             r#"
-                SELECT id, user_id, title, content, created_at, updated_at 
+                SELECT id, user_id, title, content, created_at, updated_at
                 FROM posts
                 WHERE user_id = $1
                 ORDER BY created_at DESC
             "#,
             user_id
-        ).fetch_all(pool).await?;
+        )
+        .fetch_all(pool)
+        .await?;
 
         Ok(posts)
     }
