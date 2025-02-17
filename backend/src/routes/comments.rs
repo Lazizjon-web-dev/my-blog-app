@@ -1,17 +1,14 @@
-use crate::handlers::posts::{CreatePostRequest, create_post, get_post, get_posts};
+use crate::handlers::comments::{CreateCommentRequest, create_comment, get_comments};
 use actix_web::{HttpRequest, HttpResponse, web};
 
 pub fn config(cfg: &mut web::ServiceConfig) {
+    cfg.service(web::scope("/api/posts/{post_id}/comments").route("", web::get().to(get_comments)));
     cfg.service(
-        web::scope("/api/posts")
-            .route("", web::get().to(get_posts))
-            .route("/{id}", web::get().to(get_post)),
-    );
-    cfg.service(web::resource("/api/posts").route(
-        web::post().to(
+        web::resource("api/posts/{post_id}/comments").route(web::post().to(
             |req: HttpRequest,
              pool: web::Data<sqlx::PgPool>,
-             form: web::Json<CreatePostRequest>| async move {
+             post_id: web::Path<i32>,
+             form: web::Json<CreateCommentRequest>| async move {
                 // Extract the token from the Authorization header
                 let token = match req.headers().get("Authorization") {
                     Some(header) => header.to_str().unwrap_or("").to_string(),
@@ -19,8 +16,8 @@ pub fn config(cfg: &mut web::ServiceConfig) {
                 };
 
                 // Call the handler with the extracted token
-                create_post(pool, form, token).await
+                create_comment(pool, post_id, form, token).await
             },
-        ),
-    ));
+        )),
+    );
 }
