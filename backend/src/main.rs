@@ -3,6 +3,7 @@ use actix_web::{App, HttpResponse, HttpServer, Responder, get, web};
 use dotenv::dotenv;
 use sqlx::PgPool;
 use std::env;
+use routes::*;
 
 mod handlers;
 mod models;
@@ -45,9 +46,11 @@ async fn main() -> std::io::Result<()> {
                     .max_age(3600),
             )
             .app_data(web::Data::new(pool.clone()))
-            .configure(routes::auth::config)
-            .configure(routes::posts::config)
-            .configure(routes::users::config)
+            .configure(auth::config)
+            .configure(likes::config)
+            .configure(comments::config)
+            .configure(posts::config)
+            //.configure(users::config)
             .service(get_posts)
     })
     .bind("127.0.0.1:8000")?
