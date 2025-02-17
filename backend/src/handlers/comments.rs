@@ -1,22 +1,17 @@
-use crate::models::{comment::Comment, user::User};
-use actix_web::{http::header::HeaderValue, web, HttpResponse};
+use crate::models::comment::Comment;
+use actix_web::{web, HttpResponse};
 use serde::Deserialize;
-use crate::utils::jwt::validate_token;
+use crate::utils::auth::get_user_from_token;
 
 #[derive(Debug, Deserialize)]
 pub struct CreateCommentRequest{
     pub content: String,
 }
 
-pub async fn create_comment(pool: web::Data<sqlx::PgPool>, post_id: web::Path<i32>, form: web::Json<CreateCommentRequest>, token: HeaderValue,) -> HttpResponse {
-    let email = match validate_token(&token.to_str().unwrap()) {
-        Ok(claims) => claims.sub,
-        Err(_) => return HttpResponse::Unauthorized().json("Invalid token"),
-    };
-
-    let user = match User::find_by_email(&pool, &email).await {
+pub async fn create_comment(pool: web::Data<sqlx::PgPool>, post_id: web::Path<i32>, form: web::Json<CreateCommentRequest>, token: String,) -> HttpResponse {
+    let user = match get_user_from_token(&pool, &token).await {
         Ok(user) => user,
-        Err(_) => return HttpResponse::NotFound().json("User not found") //? AI suggested Unauthorized I put NotFound
+        Err(response) => return response,
     };
 
     match Comment::create(&pool, user.id, post_id.into_inner(), &form.content).await {

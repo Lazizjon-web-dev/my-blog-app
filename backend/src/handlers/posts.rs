@@ -1,7 +1,7 @@
-use crate::models::{post::Post, user::User};
-use actix_web::{http::header::HeaderValue ,web, HttpResponse};
+use crate::models::post::Post;
+use actix_web::{web, HttpResponse};
 use serde::Deserialize;
-use crate::utils::jwt::validate_token;
+use crate::utils::auth::get_user_from_token;
 
 #[derive(Debug, Deserialize)]
 pub struct CreatePostRequest {
@@ -9,15 +9,10 @@ pub struct CreatePostRequest {
     pub content: String
 }
 
-pub async fn create_post(pool: web::Data<sqlx::PgPool>, form: web::Json<CreatePostRequest>, token: HeaderValue,) -> HttpResponse {
-    let email = match validate_token(&token.to_str().unwrap()) {
-        Ok(claims) => claims.sub,
-        Err(_) => return HttpResponse::Unauthorized().json("Invalid token"),
-    };
-
-    let user = match User::find_by_email(&pool, &email).await {
+pub async fn create_post(pool: web::Data<sqlx::PgPool>, form: web::Json<CreatePostRequest>, token: String,) -> HttpResponse {
+    let user = match get_user_from_token(&pool, &token).await {
         Ok(user) => user,
-        Err(_) => return HttpResponse::NotFound().json("User not found"),//? AI suggested Unauthorized I put NotFound
+        Err(response) => return response,
     };
 
     match Post::create(&pool, user.id, &form.title, &form.content).await {
@@ -33,8 +28,8 @@ pub async fn get_post(pool: web::Data<sqlx::PgPool>, post_id: web::Path<i32>,) -
     }
 }
 
-pub async fn get_posts(pool: web::Data<sqlx::PgPool>, offset: web::Path<i64>) -> HttpResponse {
-    match Post::find_all(&pool, 10, offset.into_inner()).await {
+pub async fn get_posts(pool: web::Data<sqlx::PgPool>,) -> HttpResponse {
+    match Post::find_all(&pool).await {
         Ok(post) => HttpResponse::Ok().json(post),
         Err(_) => HttpResponse::NotFound().json("Post not found"),
     }
