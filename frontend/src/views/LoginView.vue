@@ -1,8 +1,9 @@
 <template>
-    <div
-        class="w-full max-w-sm p-4 bg-white border border-gray-200 rounded-lg shadow-sm sm:p-6 md:p-8 dark:bg-gray-800 dark:border-gray-700"
-    >
-        <form class="space-y-6" action="#">
+    <div class="flex justify-center items-center h-screen w-screen">
+        <form
+            @submit.prevent="login"
+            class="w-full max-w-sm p-4 bg-white border border-gray-200 rounded-lg shadow-sm space-y-6 sm:p-6 md:p-8 dark:bg-gray-800 dark:border-gray-700"
+        >
             <h5 class="text-xl font-medium text-gray-900 dark:text-white">
                 Sign in to our platform
             </h5>
@@ -13,6 +14,7 @@
                     >Your email</label
                 >
                 <input
+                    v-model="loginRequest.email"
                     type="email"
                     name="email"
                     id="email"
@@ -28,6 +30,7 @@
                     >Your password</label
                 >
                 <input
+                    v-model="loginRequest.password"
                     type="password"
                     name="password"
                     id="password"
@@ -35,6 +38,7 @@
                     class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
                     required
                 />
+                <!-- minlength="8" -->
             </div>
             <div class="flex items-start">
                 <div class="flex items-start">
@@ -65,13 +69,34 @@
             </button>
             <div class="text-sm font-medium text-gray-500 dark:text-gray-300">
                 Not registered?
-                <a href="#" class="text-blue-700 hover:underline dark:text-blue-500"
-                    >Create account</a
+                <router-link
+                    to="/register"
+                    class="text-blue-700 hover:underline dark:text-blue-500"
                 >
+                    Create account
+                </router-link>
             </div>
         </form>
     </div>
 </template>
 
 <script setup lang="ts">
+import { reactive } from "vue";
+import { useAuthStore } from "@/stores/authStore";
+import { useRouter } from "vue-router";
+
+const router = useRouter();
+const loginRequest = reactive({
+    email: "",
+    password: "",
+});
+const store = useAuthStore();
+async function login() {
+    if (loginRequest.email && loginRequest.password) {
+        await store.login(loginRequest);
+        if (store.token) {
+            router.replace("/");
+        }
+    }
+}
 </script>
