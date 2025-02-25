@@ -2,7 +2,7 @@ import { defineStore } from "pinia";
 import { reactive, ref } from "vue";
 import api from "@/services/api";
 
-type Post = {
+export type Post = {
     id: number;
     user_id: number;
     title: string;
@@ -25,7 +25,17 @@ export const usePostStore = defineStore("post", () => {
         const response = await api.get(`/api/posts/${id}`);
         currentPost.value = response.data;
     }
+    async function createPost(requestBody: { title: string; content: string }, token: string) {
+        const response = await api.post(`/api/posts`, requestBody, {
+            headers: {
+                Authorization: token,
+            },
+        });
+        if (response.status === 200) {
+            console.log("post created: \n" + response.data);
+        }
+    }
 
     //? Return state and actions
-    return { posts, currentPost, fetchPosts, fetchPostById };
+    return { posts, currentPost, fetchPosts, fetchPostById, createPost };
 });
