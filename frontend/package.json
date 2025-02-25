@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.0.6",
+    "@vueup/vue-quill": "^1.2.0",
     "axios": "^1.7.9",
     "pinia": "^3.0.1",
     "tailwindcss": "^4.0.6",
