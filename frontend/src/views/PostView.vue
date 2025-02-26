@@ -18,20 +18,25 @@
             </h5>
             <div class="bg-blue-400">{{ post?.content }}</div>
             <div class="bg-purple-400">
-                <div class="p-2 flex">
+                <form @submit.prevent="postComment" class="p-2 flex">
                     <img
                         class="w-10 h-10 rounded-full"
                         src="https://flowbite.com/docs/images/people/profile-picture-1.jpg"
                         alt="user photo"
                     />
-                    <input
-                        v-model="comment"
-                        @keypress.enter="postComment"
-                        type="text"
-                        class="flex-auto"
-                    />
-                    <button @click="postComment">Comment</button>
-                </div>
+                    <div class="flex-auto">
+                        <textarea
+                            v-model="comment"
+                            max-length="10000"
+                            placeholder="Enter your comment (max 10,000 characters)"
+                            class="w-full"
+                        ></textarea>
+                        <p :class="{ 'text-sm': true, 'text-red-600': comment.length > 10000 }">
+                            {{ comment.length }}/10,000 characters
+                        </p>
+                    </div>
+                    <button type="submit" :disabled="comment.length > 10000">Comment</button>
+                </form>
             </div>
             <div class="bg-green-400">
                 <p v-for="comment in comments" :key="comment.id">
@@ -49,6 +54,7 @@
 //? Import statements
 import { ref, computed, onBeforeMount, type ComputedRef } from "vue";
 import { useRoute } from "vue-router";
+import { renderDelta } from "@/utils/deltaRenderer";
 import { usePostStore, type Post } from "@/stores/postStore";
 import { useAuthStore } from "@/stores/authStore";
 import { useCommentStore } from "@/stores/commentStore";
@@ -72,6 +78,9 @@ onBeforeMount(() => {
     postStore.currentPost =
         postStore.posts.find((post) => post.id.toString() === id.value) ?? fetchPostById(id);
     post.value = postStore.currentPost;
+    if (post.value) {
+        post.value.content = renderDelta(JSON.parse(post.value?.content));
+    }
     commentStore.fetchCommentsByPostId(+id.value);
 });
 
