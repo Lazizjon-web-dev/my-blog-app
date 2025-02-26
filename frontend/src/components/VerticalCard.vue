@@ -18,6 +18,7 @@
             <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">
                 Here are the biggest enterprise technology acquisitions of 2021 so far, in reverse
                 chronological order.
+                {{ truncate(deltaToText(JSON.parse(content ?? "")), descriptionLength) }}
             </p>
             <router-link
                 :to="`/posts/${id}`"
@@ -31,9 +32,12 @@
 </template>
 
 <script setup lang="ts">
+import { truncate } from "@/utils/stringUtils";
+import { deltaToText } from "@/utils/deltaRenderer";
 import { usePostStore } from "@/stores/postStore";
 import RightArrowIcon from "@/components/icons/RightArrowIcon.vue";
 
+const descriptionLength = 105;
 const store = usePostStore();
 const { id, user_id, title, content } = defineProps({
     id: Number,
